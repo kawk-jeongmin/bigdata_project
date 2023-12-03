@@ -1,0 +1,70 @@
+제목 : 멜론 top100에는 한글제목이 많을까 영어제목이 많을까?
+사용할 데이터 : 멜론 top100 데이터
+데이터 수집 방법 : 멜론 top100 URL 활용
+분석할 내용 : 멜론 top100의 노래 제목은 한글이 많은지 영어가 많은지 분석.
+
+1.	멜론 top100 차트 가져오기
+
+-	코드
+import requests
+from bs4 import BeautifulSoup
+
+request = requests.get('https://www.melon.com/chart/index.htm')
+soup = BeautifulSoup(request.text)
+
+header = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0l Win64; x64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'}
+request = requests.get('https://www.melon.com/chart/index.htm',headers=header)
+print(request)
+
+soup = BeautifulSoup(request.text)
+
+titles = soup.findAll('div', {'class':'rank01'})
+artists = soup.findAll('span', {'class':'checkEllipsis'})
+
+i = 1
+for t, a in zip (titles, artists):
+  title = t.text.strip()
+  artist = a.text.strip().split('\n')[0]
+  print('{0:3}위 {1} - {2}'.format(i+1, artist, title))
+i += 1
+ 
+
+-	결과   
+
+2.	노래 제목이 영어인지 한국어인지 분석
+
+-	코드 
+import requests
+from bs4 import BeautifulSoup
+import langid
+
+header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0l Win64; x64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'}
+request = requests.get('https://www.melon.com/chart/index.htm', headers=header)
+soup = BeautifulSoup(request.text, 'html.parser')
+
+titles = soup.findAll('div', {'class': 'rank01'})
+artists = soup.findAll('span', {'class': 'checkEllipsis'})
+
+i = 0
+english_count = 0
+korean_count = 0
+
+for t, a in zip(titles, artists):
+    title = t.text.strip()
+    artist = a.text.strip().split('\n')[0]
+
+    # Use langid to detect the language of the title
+    lang, _ = langid.classify(title)
+
+    if lang == 'ko':
+        korean_count += 1
+    else:
+        english_count += 1
+
+    i += 1
+
+print("영어 제목:", english_count)
+print("한국어 제목:", korean_count)
+
+-	결과
+ 
